@@ -1,11 +1,18 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Progress } from "@/components/ui/progress";
+
+interface ClickRipple {
+  id: number;
+  x: number;
+  y: number;
+}
 
 export const SpeedClicker = () => {
   const [clicks, setClicks] = useState<number[]>([]);
   const [cpm, setCpm] = useState(0);
+  const [ripples, setRipples] = useState<ClickRipple[]>([]);
   const [highScore, setHighScore] = useState(() => {
     const saved = localStorage.getItem('highScore');
     return saved ? parseInt(saved) : 0;
@@ -26,9 +33,26 @@ export const SpeedClicker = () => {
   }, [calculateCPM]);
 
   // Handle click
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     const newClicks = [...clicks, Date.now()];
     setClicks(newClicks);
+    
+    // Add ripple effect
+    const button = e.currentTarget;
+    const rect = button.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const newRipple = {
+      id: Date.now(),
+      x,
+      y,
+    };
+    
+    setRipples(prev => [...prev, newRipple]);
+    setTimeout(() => {
+      setRipples(prev => prev.filter(ripple => ripple.id !== newRipple.id));
+    }, 600);
     
     const currentCPM = calculateCPM();
     if (currentCPM > highScore) {
@@ -77,13 +101,30 @@ export const SpeedClicker = () => {
 
       <motion.button
         onClick={handleClick}
-        className="w-64 h-64 bg-white rounded-full shadow-lg flex items-center justify-center text-lg font-medium text-gray-700 cursor-pointer select-none"
-        whileTap={{ scale: 0.95 }}
+        className="w-64 h-64 bg-white rounded-full shadow-lg flex items-center justify-center text-lg font-medium text-gray-700 cursor-pointer select-none relative overflow-hidden"
+        whileTap={{ scale: 0.95, backgroundColor: "#f3f4f6" }}
         initial={{ scale: 1 }}
         whileHover={{ scale: 1.02 }}
         transition={{ type: "spring", stiffness: 500, damping: 30 }}
       >
-        CLICK
+        <span className="z-10">CLICK</span>
+        <AnimatePresence>
+          {ripples.map(ripple => (
+            <motion.span
+              key={ripple.id}
+              initial={{ width: 0, height: 0, opacity: 0.5, x: ripple.x, y: ripple.y }}
+              animate={{ width: 500, height: 500, opacity: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              style={{
+                position: 'absolute',
+                borderRadius: '50%',
+                transform: 'translate(-50%, -50%)',
+                backgroundColor: 'rgba(0, 0, 0, 0.05)'
+              }}
+            />
+          ))}
+        </AnimatePresence>
       </motion.button>
 
       <div className="mt-8 text-sm text-gray-500">
