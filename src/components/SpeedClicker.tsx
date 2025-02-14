@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Progress } from "@/components/ui/progress";
+import { Trophy, TrendingUp } from "lucide-react";
 
 interface ClickRipple {
   id: number;
@@ -66,6 +67,9 @@ export const SpeedClicker = () => {
     return Math.min((value / 300) * 100, 100);
   };
 
+  // Determine if approaching record (within 90%)
+  const isApproachingRecord = cpm >= highScore * 0.9 && cpm < highScore;
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4">
       <div className="mb-8 text-center">
@@ -78,18 +82,43 @@ export const SpeedClicker = () => {
           <div>
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm font-medium text-gray-500">CURRENT CPM</span>
-              <span className="text-lg font-bold text-primary">{cpm}</span>
+              <div className="flex items-center gap-2">
+                {isApproachingRecord && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="text-yellow-500"
+                  >
+                    <TrendingUp size={20} />
+                  </motion.div>
+                )}
+                {cpm > highScore && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="text-primary"
+                  >
+                    <Trophy size={20} />
+                  </motion.div>
+                )}
+                <span className="text-lg font-bold text-primary">{cpm}</span>
+              </div>
             </div>
             <Progress 
               value={calculateProgress(cpm)}
-              className="h-3 bg-gray-100"
+              className={`h-3 bg-gray-100 ${
+                isApproachingRecord ? 'bg-yellow-100' : ''
+              } ${cpm > highScore ? 'bg-primary/10' : ''}`}
             />
           </div>
 
           <div>
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm font-medium text-gray-500">HIGH SCORE</span>
-              <span className="text-lg font-bold text-primary">{highScore}</span>
+              <div className="flex items-center gap-2">
+                <Trophy size={16} className="text-primary opacity-50" />
+                <span className="text-lg font-bold text-primary">{highScore}</span>
+              </div>
             </div>
             <Progress 
               value={calculateProgress(highScore)}
@@ -101,7 +130,9 @@ export const SpeedClicker = () => {
 
       <motion.button
         onClick={handleClick}
-        className="w-64 h-64 bg-white rounded-full shadow-lg flex items-center justify-center text-lg font-medium text-gray-700 cursor-pointer select-none relative overflow-hidden"
+        className={`w-64 h-64 bg-white rounded-full shadow-lg flex items-center justify-center text-lg font-medium text-gray-700 cursor-pointer select-none relative overflow-hidden ${
+          isApproachingRecord ? 'shadow-yellow-200' : ''
+        } ${cpm > highScore ? 'shadow-primary/20' : ''}`}
         whileTap={{ scale: 0.95, backgroundColor: "#f3f4f6" }}
         initial={{ scale: 1 }}
         whileHover={{ scale: 1.02 }}
