@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import { Progress } from "@/components/ui/progress";
 
 export const SpeedClicker = () => {
   const [clicks, setClicks] = useState<number[]>([]);
@@ -36,6 +37,11 @@ export const SpeedClicker = () => {
     }
   };
 
+  // Calculate percentage for progress bar (max at 300 CPM)
+  const calculateProgress = (value: number) => {
+    return Math.min((value / 300) * 100, 100);
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4">
       <div className="mb-8 text-center">
@@ -43,14 +49,29 @@ export const SpeedClicker = () => {
         <p className="text-lg text-gray-600 mb-6">Test your clicking speed!</p>
       </div>
 
-      <div className="flex gap-8 mb-8">
-        <div className="text-center">
-          <div className="text-sm font-medium text-gray-500 mb-1">CURRENT CPM</div>
-          <div className="text-4xl font-bold text-primary">{cpm}</div>
-        </div>
-        <div className="text-center">
-          <div className="text-sm font-medium text-gray-500 mb-1">HIGH SCORE</div>
-          <div className="text-4xl font-bold text-primary">{highScore}</div>
+      <div className="w-full max-w-md mb-8">
+        <div className="space-y-4">
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-medium text-gray-500">CURRENT CPM</span>
+              <span className="text-lg font-bold text-primary">{cpm}</span>
+            </div>
+            <Progress 
+              value={calculateProgress(cpm)}
+              className="h-3 bg-gray-100"
+            />
+          </div>
+
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-medium text-gray-500">HIGH SCORE</span>
+              <span className="text-lg font-bold text-primary">{highScore}</span>
+            </div>
+            <Progress 
+              value={calculateProgress(highScore)}
+              className="h-3 bg-gray-100"
+            />
+          </div>
         </div>
       </div>
 
