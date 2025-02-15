@@ -19,19 +19,19 @@ export const SpeedClicker = () => {
     return saved ? parseInt(saved) : 0;
   });
 
-  // Calculate CPM based on clicks in the last minute
-  const calculateCPM = useCallback(() => {
+  // Calculate clicks per 5 seconds
+  const calculateCPS = useCallback(() => {
     const now = Date.now();
-    const recentClicks = clicks.filter(timestamp => now - timestamp < 60000);
+    const recentClicks = clicks.filter(timestamp => now - timestamp < 5000); // Changed from 60000 to 5000
     setCpm(recentClicks.length);
     return recentClicks.length;
   }, [clicks]);
 
-  // Update CPM every second
+  // Update CPS every second
   useEffect(() => {
-    const interval = setInterval(calculateCPM, 1000);
+    const interval = setInterval(calculateCPS, 1000);
     return () => clearInterval(interval);
-  }, [calculateCPM]);
+  }, [calculateCPS]);
 
   // Handle click
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -55,16 +55,16 @@ export const SpeedClicker = () => {
       setRipples(prev => prev.filter(ripple => ripple.id !== newRipple.id));
     }, 600);
     
-    const currentCPM = calculateCPM();
-    if (currentCPM > highScore) {
-      setHighScore(currentCPM);
-      localStorage.setItem('highScore', currentCPM.toString());
+    const currentCPS = calculateCPS();
+    if (currentCPS > highScore) {
+      setHighScore(currentCPS);
+      localStorage.setItem('highScore', currentCPS.toString());
     }
   };
 
-  // Calculate percentage for progress bar (max at 300 CPM)
+  // Calculate percentage for progress bar (max at 50 clicks per 5 seconds)
   const calculateProgress = (value: number) => {
-    return Math.min((value / 300) * 100, 100);
+    return Math.min((value / 50) * 100, 100); // Adjusted max value from 300 to 50
   };
 
   // Determine if approaching record (within 90%)
@@ -81,7 +81,7 @@ export const SpeedClicker = () => {
         <div className="space-y-4">
           <div>
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium text-gray-500">CURRENT CPM</span>
+              <span className="text-sm font-medium text-gray-500">CLICKS / 5s</span>
               <div className="flex items-center gap-2">
                 {isApproachingRecord && (
                   <motion.div
